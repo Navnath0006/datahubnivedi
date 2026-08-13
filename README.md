@@ -85,7 +85,7 @@ Tuning the simulation (rates, fraud %, dwell times) lives at the top of
 
 - Everything is a live simulation with random draws, so no two runs look the same and
   the numbers drift the way a real feed would. It is an illustrative model of the flow,
-  not connected to live NADES/NADRES data.
+  not connected to live NADRES data.
 - The external India outline is adapted from Survey of India's official 1:16M
   *Outline of India* (permitted for individual/internal/educational/research/website
   use; Survey of India retains copyright). Internal state/UT geometry is adapted
