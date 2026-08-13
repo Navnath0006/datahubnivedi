@@ -86,8 +86,10 @@ Tuning the simulation (rates, fraud %, dwell times) lives at the top of
 - Everything is a live simulation with random draws, so no two runs look the same and
   the numbers drift the way a real feed would. It is an illustrative model of the flow,
   not connected to live NADES/NADRES data.
-- India geometry is adapted from Natural Earth 5.1.1 Admin-0 (India point of view)
-  and Admin-1 state/province data, which Natural Earth releases to the public domain.
+- The external India outline is adapted from Survey of India's official 1:16M
+  *Outline of India* (permitted for individual/internal/educational/research/website
+  use; Survey of India retains copyright). Internal state/UT geometry is adapted
+  from public-domain Natural Earth 5.1.1 Admin-1 data and fitted to that outline.
   SEIR parameters and NADRES-style risk values are illustrative simulation outputs,
   not official forecasts or veterinary guidance.
 - `prefers-reduced-motion` is respected — particle counts drop and processing dwells

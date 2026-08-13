@@ -199,11 +199,7 @@ window.FLOW = (function () {
 
   function initPredictionModels() {
     prediction.mapRisk = {};
-    if (window.INDIA_MAP) {
-      window.INDIA_MAP.states.forEach(function (state) {
-        prediction.mapRisk[state.name] = 0.20;
-      });
-    }
+    // Only monitored states receive a score; the remaining map areas stay no-data.
     HUB.STATES.forEach(function (state) {
       prediction.mapRisk[state.name] = RISK_SCORE[state.base] || 0.20;
     });
