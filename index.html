@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>National Livestock Disease Intelligence — Live Data Hub</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<!-- ═══ header ═══════════════════════════════════════════════════════ -->
+<header class="topbar">
+  <div class="brand">
+    <h1>National Livestock Disease Intelligence</h1>
+    <span>DATA HUB &amp; DECISION SUPPORT CENTRE · LIVE</span>
+  </div>
+  <div class="tagline">
+    <b>One Health</b><b>Early Detection</b><b>Timely Response</b><b>Evidence-based</b>
+  </div>
+
+  <div class="spacer"></div>
+
+  <div class="controls">
+    <button id="surgeBtn" class="btn surge" title="Simulate an outbreak surge (O)">⚠ Inject outbreak</button>
+    <div id="speedWrap" class="seg-wrap"></div>
+    <button id="playBtn" class="btn">❚❚ Pause</button>
+  </div>
+
+  <div class="status">
+    <span class="dot" id="statusDot"></span>
+    <span id="statusText">LIVE</span>
+    <span class="clock" id="clock">00:00:00</span>
+  </div>
+</header>
+
+<!-- ═══ main: flow + side ════════════════════════════════════════════ -->
+<div class="main">
+
+  <section class="flow-wrap">
+    <div class="flow-canvas-host">
+      <canvas id="flowCanvas"></canvas>
+    </div>
+    <div class="legend-bar">
+      <span class="legend-title">Sources</span>
+      <span id="srcLegend" style="display:contents"></span>
+      <span style="flex:1"></span>
+      <span class="legend-title">Risk</span>
+      <span id="riskLegend" style="display:contents"></span>
+    </div>
+  </section>
+
+  <aside class="side">
+    <div class="card">
+      <div class="card-h">NADRES Dashboard <span class="tag">real-time</span></div>
+      <div class="kpis">
+        <div class="kpi a"><div class="kpi-v" id="kAlerts">1,256</div><div class="kpi-l">Total Alerts</div></div>
+        <div class="kpi b"><div class="kpi-v" id="kHigh">278</div><div class="kpi-l">High-Risk Alerts</div></div>
+        <div class="kpi c"><div class="kpi-v" id="kDis">98</div><div class="kpi-l">Diseases Monitored</div></div>
+        <div class="kpi d"><div class="kpi-v" id="kSamp">45</div><div class="kpi-l">Samples Sequenced</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h">Recent Alerts <span class="tag">auto-feed</span></div>
+      <div class="thead"><span>Disease</span><span>Species</span><span>Location</span><span style="text-align:right">Severity</span></div>
+      <div id="alertTable"></div>
+    </div>
+
+    <div class="card" id="focusCard">
+      <div id="focusPanel"></div>
+    </div>
+  </aside>
+</div>
+
+<!-- ═══ footer: charts + risk board + log ════════════════════════════ -->
+<div class="footer">
+  <div class="card">
+    <div class="card-h">Disease-wise Alerts</div>
+    <div class="chart" id="dChart"></div>
+  </div>
+  <div class="card">
+    <div class="card-h">State-wise Alerts</div>
+    <div class="chart" id="sChart"></div>
+  </div>
+  <div class="card">
+    <div class="card-h">Risk Map · State Level</div>
+    <div class="risk-grid" id="riskBoard"></div>
+  </div>
+  <div class="card log-card">
+    <div class="card-h">Live Event Log <span class="tag">streaming</span></div>
+    <div class="log-stream" id="logStream"></div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/india-map.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
