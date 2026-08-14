@@ -65,13 +65,19 @@ window.FLOW = (function () {
   function layout() {
     nodes = {};
     var S = HUB.SOURCES;
-    var sx = W * 0.015, sw = W * 0.135;
+    var sx = W * 0.015, sw = W * 0.152;
     var top = H * 0.075, bot = H * 0.955, span = bot - top;
-    var sh = span / S.length - Math.min(10, span * 0.012);
+    var gap = Math.min(10, span * 0.012);
+    /* Streams that list their sub-sources on-canvas need room for the rows,
+       so they claim a proportionally taller slot than the plain ones. */
+    var weights = S.map(function (src) { return hasIconItems(src) ? 2.4 : 1; });
+    var totalW = 0; weights.forEach(function (v) { totalW += v; });
+    var y = top;
     S.forEach(function (src, i) {
-      var y = top + i * (span / S.length);
+      var slot = span * weights[i] / totalW, sh = slot - gap;
       nodes[src.id] = { id: src.id, kind: "source", x: sx, y: y, w: sw, h: sh,
         cx: sx + sw, cy: y + sh / 2, color: src.color, title: src.n, src: src };
+      y += slot;
     });
 
     /* engine container + 3 chambers */
@@ -319,6 +325,34 @@ window.FLOW = (function () {
     ctx.font = (weight || "") + " " + (size || 10) + "px 'Segoe UI', system-ui, sans-serif";
     ctx.fillText(t, x, y);
   }
+  function hasIconItems(src) {
+    return !!(src && src.items && src.items[0] && src.items[0].icon);
+  }
+  /* Trim a label to `max` px, ending in an ellipsis. Assumes ctx.font is
+     already set to the size it will be drawn at. */
+  function fit(s, max) {
+    if (ctx.measureText(s).width <= max) return s;
+    var t = s;
+    while (t.length > 1 && ctx.measureText(t + "…").width > max) t = t.slice(0, -1);
+    return t + "…";
+  }
+  /* Faint icon + label rows listing a stream's sub-sources inside its node.
+     Deliberately low-contrast: the node title stays the readable element. */
+  function drawSourceItems(n, items, alpha) {
+    var padL = 11, listTop = n.y + 21, avail = n.h - listTop + n.y - 6;
+    var row = Math.min(15, avail / items.length);
+    var fs = Math.max(6.4, Math.min(8.8, row * 0.62));
+    var textX = n.x + padL + fs * 1.55, maxW = n.x + n.w - 8 - textX;
+    items.forEach(function (it, i) {
+      var cy = listTop + row * (i + 0.5);
+      ctx.globalAlpha = alpha * 0.55;
+      txt(it.icon, n.x + padL, cy, C.ink, fs * 1.1, "left", "400");
+      ctx.globalAlpha = alpha * 0.6;
+      ctx.font = "400 " + fs + "px 'Segoe UI', system-ui, sans-serif";
+      txt(fit(it.label, maxW), textX, cy, C.ink, fs, "left", "400");
+    });
+    ctx.globalAlpha = alpha;
+  }
   function connector(aId, bId, lit, time) {
     var a = nodeCenter(aId), b = nodeCenter(bId);
     var ax = nodes[aId].x + nodes[aId].w, ay = a.y, bx = nodes[bId].x, by = b.y;
@@ -366,7 +400,13 @@ window.FLOW = (function () {
       rr(n.x, n.y, n.w, n.h, 8); ctx.fill(); ctx.stroke();
       ctx.fillStyle = n.color;
       rr(n.x, n.y, 4, n.h, 2); ctx.fill();
-      txt(n.title, n.x + 12, n.y + n.h * 0.5, C.ink, Math.min(12, n.h * 0.32), "left", "600");
+      /* Tall enough to list its sub-sources? Title moves up to make room. */
+      if (hasIconItems(n.src) && n.h > n.src.items.length * 10 + 26) {
+        txt(n.title, n.x + 12, n.y + 12, C.ink, 11.5, "left", "600");
+        drawSourceItems(n, n.src.items, dim ? 0.4 : 1);
+      } else {
+        txt(n.title, n.x + 12, n.y + n.h * 0.5, C.ink, Math.min(12, n.h * 0.32), "left", "600");
+      }
       ctx.globalAlpha = 1;
     });
     txt("1  DATA INGESTION & CAPTURING", nodes.active.x, nodes.active.y - 14, C.muted, 10.5, "left", "700");

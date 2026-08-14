@@ -8,12 +8,23 @@ window.HUB = (function () {
   "use strict";
 
   /* The seven data-ingestion streams (section 1, A–G).
-     `weight` biases how often each stream emits a record. */
+     `weight` biases how often each stream emits a record.
+     An item may be a plain string or {icon,label}; icon-bearing lists are
+     also drawn inside the node on the canvas, so keep those labels short. */
   var SOURCES = [
     { id: "active",  n: "Active Surveillance",        color: "#34D399", weight: 3,
       items: ["Field Investigation", "Outbreak Investigation", "Quarantine Monitoring", "Movement Monitoring"] },
     { id: "passive", n: "Passive Surveillance",       color: "#60A5FA", weight: 5,
-      items: ["NADEN report", "1962 Toll-Free call", "CADDES app", "PDDES", "Pashu Sakhi", "Para-Vet", "Vet Doctor", "Chatbot"] },
+      items: [
+        { icon: "🏛️", label: "NADEN (Reporting by NADEN Centres)" },
+        { icon: "📞",       label: "1962 Toll Free (Farmers Calls)" },
+        { icon: "📱",       label: "CADDES (Application)" },
+        { icon: "📋",       label: "PDDES" },
+        { icon: "🌾",       label: "Pashu Sakhi & Sakha" },
+        { icon: "💉",       label: "Para Vets" },
+        { icon: "🩺",       label: "Veterinary Doctors" },
+        { icon: "🤖",       label: "Through Chatbot" }
+      ] },
     { id: "sentinel",n: "Sentinel Surveillance",      color: "#2DD4BF", weight: 2,
       items: ["Sentinel Village", "Sentinel Farm", "Sentinel Animal", "Event-based Sampling"] },
     { id: "genomic", n: "Genomic Lab",                color: "#A78BFA", weight: 2, sample: true,
@@ -91,8 +102,10 @@ window.HUB = (function () {
 
   /* Log-line builders — each takes context and returns a human sentence. */
   function pick(a){ return a[(Math.random()*a.length)|0]; }
+  /* Source items come in two shapes (string or {icon,label}) — read either. */
+  function itemLabel(it){ return (it && it.label) || it; }
   var LOG = {
-    ingest: function(src){ return "Record ingested · " + pick(src.items) + " → " + pick(STATES).name; },
+    ingest: function(src){ return "Record ingested · " + itemLabel(pick(src.items)) + " → " + pick(STATES).name; },
     hotspot: function(dis, st){ return "Hotspot detected · " + dis.name + " cluster in " + st.name; },
     fraud: function(){ return "Fraud check failed · duplicate/unverifiable report dropped"; },
     alert: function(dis, st, risk){ return "ALERT SENT · " + dis.name + " · " + st.name + " · " + risk.label + " risk"; },
@@ -104,6 +117,6 @@ window.HUB = (function () {
   return {
     SOURCES: SOURCES, STAGES: STAGES, RISK: RISK, STATES: STATES,
     DISEASES: DISEASES, ENABLERS: ENABLERS, PRINCIPLES: PRINCIPLES,
-    LOG: LOG, riskByKey: riskByKey, pick: pick
+    LOG: LOG, riskByKey: riskByKey, pick: pick, itemLabel: itemLabel
   };
 })();

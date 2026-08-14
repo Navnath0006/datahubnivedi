@@ -197,7 +197,7 @@ window.DASH = (function () {
       var src = HUB.SOURCES.filter(function (s) { return s.id === node.id; })[0];
       if (!src) { resetFocus(); return; }
       focusHost.innerHTML = '<div class="focus-h" style="color:' + src.color + '">' + src.n + '</div>' +
-        '<p class="focus-p">Ingestion stream. Feeds: ' + src.items.join(", ") + '.</p>';
+        '<p class="focus-p">Ingestion stream. Feeds: ' + src.items.map(HUB.itemLabel).join(", ") + '.</p>';
       return;
     }
     focusHost.innerHTML = '<div class="focus-h">' + info.title + '</div>' +
