@@ -9,16 +9,23 @@ window.HUB = (function () {
 
   /* The seven data-ingestion streams (section 1, A–G).
      `weight` biases how often each stream emits a record.
-     An item may be a plain string or {icon,label}; icon-bearing lists are
-     also drawn inside the node on the canvas, so keep those labels short. */
+     An item may be a plain string or {icon,label}. Icon-bearing lists are
+     also drawn inside the node on the canvas; add `short` when the full
+     label is too long for a narrow column — the inspector and the event
+     log always use the full `label`. */
   var SOURCES = [
     { id: "active",  n: "Active Surveillance",        color: "#34D399", weight: 3,
-      items: ["Field Investigation", "Outbreak Investigation", "Quarantine Monitoring", "Movement Monitoring"] },
+      items: [
+        { icon: "🔍", label: "Field Investigations" },
+        { icon: "🦠", label: "Outbreak Investigations" },
+        { icon: "🏥", label: "Quarantine Monitoring" },
+        { icon: "🚚", label: "Movement Monitoring" }
+      ] },
     { id: "passive", n: "Passive Surveillance",       color: "#60A5FA", weight: 5,
       items: [
-        { icon: "🏛️", label: "NADEN (Reporting by NADEN Centres)" },
-        { icon: "📞",       label: "1962 Toll Free (Farmers Calls)" },
-        { icon: "📱",       label: "CADDES (Application)" },
+        { icon: "🏛️", label: "NADEN (Reporting by NADEN Centres)", short: "NADEN Centres" },
+        { icon: "📞",       label: "1962 Toll Free (Farmers Calls)", short: "1962 Toll Free" },
+        { icon: "📱",       label: "CADDES (Application)", short: "CADDES App" },
         { icon: "📋",       label: "PDDES" },
         { icon: "🌾",       label: "Pashu Sakhi & Sakha" },
         { icon: "💉",       label: "Para Vets" },
@@ -26,15 +33,44 @@ window.HUB = (function () {
         { icon: "🤖",       label: "Through Chatbot" }
       ] },
     { id: "sentinel",n: "Sentinel Surveillance",      color: "#2DD4BF", weight: 2,
-      items: ["Sentinel Village", "Sentinel Farm", "Sentinel Animal", "Event-based Sampling"] },
+      items: [
+        { icon: "🏘️", label: "Sentinel Villages" },
+        { icon: "🚜", label: "Sentinel Farms" },
+        { icon: "🐄", label: "Sentinel Animals" },
+        { icon: "🧪", label: "Event-based Sampling" }
+      ] },
     { id: "genomic", n: "Genomic Lab",                color: "#A78BFA", weight: 2, sample: true,
-      items: ["NGS Sequencing", "Variant ID", "Strain Typing", "Genomic Record"] },
+      items: [
+        { icon: "🧬", label: "NGS Sequencing" },
+        { icon: "🔡", label: "Variant Identification" },
+        { icon: "🕸️", label: "Strain Typing" },
+        { icon: "🗄️", label: "Genomic Data" }
+      ] },
     { id: "news",    n: "Newspaper Surveillance",     color: "#FBBF24", weight: 1,
-      items: ["News item", "Media Report", "Bulletin"] },
+      items: [
+        { icon: "📰", label: "News" },
+        { icon: "🖥️", label: "Media Reports" },
+        { icon: "📄", label: "Bulletins & Reports" }
+      ] },
     { id: "lit",     n: "Literature Surveillance",    color: "#818CF8", weight: 1,
-      items: ["Journal Article", "Research Paper", "Technical Report"] },
+      items: [
+        { icon: "📘", label: "Journal Articles" },
+        { icon: "📑", label: "Research Papers" },
+        { icon: "📄", label: "Technical Reports" }
+      ] },
     { id: "env",     n: "Environmental & Ecological", color: "#A3E635", weight: 3,
-      items: ["Meteorological", "Satellite/Remote Sensing", "Land Use", "Vector & Wildlife", "Soil & Pasture", "Water Quality", "Rainfall", "Humidity"] }
+      items: [
+        { icon: "🌦️", label: "Meteorological Data" },
+        { icon: "🛰️", label: "Remote Sensing & Satellite Data", short: "Remote Sensing" },
+        { icon: "🗺️", label: "Land Use / Land Cover" },
+        { icon: "🦟", label: "Vector & Wildlife Surveillance", short: "Vector & Wildlife" },
+        { icon: "🌱", label: "Soil & Pasture Data" },
+        { icon: "💧", label: "Water Quality Data" },
+        { icon: "🌡️", label: "Temperature" },
+        { icon: "💦", label: "Humidity" },
+        { icon: "🌧️", label: "Rainfall" },
+        { icon: "➕", label: "Others" }
+      ] }
   ];
 
   /* Processing / downstream stages (sections 2–5), keyed by node id.

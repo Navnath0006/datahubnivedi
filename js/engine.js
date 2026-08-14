@@ -68,30 +68,13 @@ window.FLOW = (function () {
     var sx = W * 0.015, sw = W * 0.152;
     var top = H * 0.075, bot = H * 0.955, span = bot - top;
     var gap = Math.min(10, span * 0.012);
-    var equal = span / S.length, minH = 34;
-    /* A stream that lists its sub-sources borrows height only for the rows it
-       cannot already fit, and only as much as the plain nodes can spare. On a
-       tall canvas the equal share is enough, so nothing is borrowed at all. */
-    var want = [], owed = 0, payers = 0;
+    /* Every stream gets the same slot regardless of how many sub-sources it
+       lists; the longer lists wrap into columns rather than growing taller. */
+    var slot = span / S.length, sh = slot - gap;
     S.forEach(function (src, i) {
-      if (!hasIconItems(src)) { want[i] = 0; payers++; return; }
-      var need = 28 + src.items.length * 13;
-      want[i] = Math.max(0, Math.min(need, span * 0.4) - equal);
-      owed += want[i];
-    });
-    var spare = payers * (equal - gap - minH);
-    if (owed > spare) {
-      var k = spare > 0 ? spare / owed : 0;
-      want = want.map(function (v) { return v * k; });
-      owed *= k;
-    }
-    var cut = payers ? owed / payers : 0;
-    var y = top;
-    S.forEach(function (src, i) {
-      var slot = equal + want[i] - (want[i] ? 0 : cut), sh = slot - gap;
+      var y = top + i * slot;
       nodes[src.id] = { id: src.id, kind: "source", x: sx, y: y, w: sw, h: sh,
         cx: sx + sw, cy: y + sh / 2, color: src.color, title: src.n, src: src };
-      y += slot;
     });
 
     /* engine container + 3 chambers */
@@ -353,20 +336,25 @@ window.FLOW = (function () {
   /* Faint icon + label rows listing a stream's sub-sources inside its node.
      Deliberately low-contrast: the node title stays the readable element. */
   function drawSourceItems(n, items, alpha) {
-    var padL = 11, listTop = n.y + 22, avail = n.h - 28;
-    /* Rows breathe on a roomy node but never stretch into a sparse ladder;
-       whatever height is left over is split above and below the block. */
-    var row = Math.max(10, Math.min(18, avail / items.length));
-    var y0 = listTop + Math.max(0, (avail - row * items.length) / 2);
-    var fs = Math.max(6.4, Math.min(9.2, row * 0.6));
-    var textX = n.x + padL + fs * 1.55, maxW = n.x + n.w - 8 - textX;
+    var padL = 10, listTop = n.y + 21, listBot = n.y + n.h - 5;
+    var avail = listBot - listTop;
+    /* Stay single-column while the rows are still legible; a long list wraps
+       into a second column rather than shrinking the whole node's type. */
+    var cols = (items.length > 5 && avail / items.length < 9) ? 2 : 1;
+    var rows = Math.ceil(items.length / cols);
+    var row = Math.min(18, avail / rows);
+    var colW = (n.w - padL - 6) / cols;
+    var fs = Math.max(5.6, Math.min(9.2, row * 0.6));
+    var y0 = listTop + Math.max(0, (avail - row * rows) / 2);
     items.forEach(function (it, i) {
-      var cy = y0 + row * (i + 0.5);
+      var x = n.x + padL + Math.floor(i / rows) * colW;
+      var cy = y0 + row * ((i % rows) + 0.5);
+      var tx = x + fs * 1.5;
       ctx.globalAlpha = alpha * 0.55;
-      txt(it.icon, n.x + padL, cy, C.ink, fs * 1.1, "left", "400");
+      txt(it.icon, x, cy, C.ink, fs * 1.1, "left", "400");
       ctx.globalAlpha = alpha * 0.6;
       ctx.font = "400 " + fs + "px 'Segoe UI', system-ui, sans-serif";
-      txt(fit(it.label, maxW), textX, cy, C.ink, fs, "left", "400");
+      txt(fit(it.short || it.label, x + colW - 4 - tx), tx, cy, C.ink, fs, "left", "400");
     });
     ctx.globalAlpha = alpha;
   }
@@ -417,9 +405,9 @@ window.FLOW = (function () {
       rr(n.x, n.y, n.w, n.h, 8); ctx.fill(); ctx.stroke();
       ctx.fillStyle = n.color;
       rr(n.x, n.y, 4, n.h, 2); ctx.fill();
-      /* Tall enough to list its sub-sources? Title moves up to make room. */
-      if (hasIconItems(n.src) && n.h > n.src.items.length * 10 + 26) {
-        txt(n.title, n.x + 12, n.y + 12, C.ink, 11.5, "left", "600");
+      /* Room for a list at all? Title moves up to make space for the rows. */
+      if (hasIconItems(n.src) && n.h > 44) {
+        txt(n.title, n.x + 11, n.y + 11, C.ink, 11, "left", "600");
         drawSourceItems(n, n.src.items, dim ? 0.4 : 1);
       } else {
         txt(n.title, n.x + 12, n.y + n.h * 0.5, C.ink, Math.min(12, n.h * 0.32), "left", "600");
