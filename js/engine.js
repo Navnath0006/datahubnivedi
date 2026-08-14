@@ -68,13 +68,27 @@ window.FLOW = (function () {
     var sx = W * 0.015, sw = W * 0.152;
     var top = H * 0.075, bot = H * 0.955, span = bot - top;
     var gap = Math.min(10, span * 0.012);
-    /* Streams that list their sub-sources on-canvas need room for the rows,
-       so they claim a proportionally taller slot than the plain ones. */
-    var weights = S.map(function (src) { return hasIconItems(src) ? 2.4 : 1; });
-    var totalW = 0; weights.forEach(function (v) { totalW += v; });
+    var equal = span / S.length, minH = 34;
+    /* A stream that lists its sub-sources borrows height only for the rows it
+       cannot already fit, and only as much as the plain nodes can spare. On a
+       tall canvas the equal share is enough, so nothing is borrowed at all. */
+    var want = [], owed = 0, payers = 0;
+    S.forEach(function (src, i) {
+      if (!hasIconItems(src)) { want[i] = 0; payers++; return; }
+      var need = 28 + src.items.length * 13;
+      want[i] = Math.max(0, Math.min(need, span * 0.4) - equal);
+      owed += want[i];
+    });
+    var spare = payers * (equal - gap - minH);
+    if (owed > spare) {
+      var k = spare > 0 ? spare / owed : 0;
+      want = want.map(function (v) { return v * k; });
+      owed *= k;
+    }
+    var cut = payers ? owed / payers : 0;
     var y = top;
     S.forEach(function (src, i) {
-      var slot = span * weights[i] / totalW, sh = slot - gap;
+      var slot = equal + want[i] - (want[i] ? 0 : cut), sh = slot - gap;
       nodes[src.id] = { id: src.id, kind: "source", x: sx, y: y, w: sw, h: sh,
         cx: sx + sw, cy: y + sh / 2, color: src.color, title: src.n, src: src };
       y += slot;
@@ -339,12 +353,15 @@ window.FLOW = (function () {
   /* Faint icon + label rows listing a stream's sub-sources inside its node.
      Deliberately low-contrast: the node title stays the readable element. */
   function drawSourceItems(n, items, alpha) {
-    var padL = 11, listTop = n.y + 21, avail = n.h - listTop + n.y - 6;
-    var row = Math.min(15, avail / items.length);
-    var fs = Math.max(6.4, Math.min(8.8, row * 0.62));
+    var padL = 11, listTop = n.y + 22, avail = n.h - 28;
+    /* Rows breathe on a roomy node but never stretch into a sparse ladder;
+       whatever height is left over is split above and below the block. */
+    var row = Math.max(10, Math.min(18, avail / items.length));
+    var y0 = listTop + Math.max(0, (avail - row * items.length) / 2);
+    var fs = Math.max(6.4, Math.min(9.2, row * 0.6));
     var textX = n.x + padL + fs * 1.55, maxW = n.x + n.w - 8 - textX;
     items.forEach(function (it, i) {
-      var cy = listTop + row * (i + 0.5);
+      var cy = y0 + row * (i + 0.5);
       ctx.globalAlpha = alpha * 0.55;
       txt(it.icon, n.x + padL, cy, C.ink, fs * 1.1, "left", "400");
       ctx.globalAlpha = alpha * 0.6;
